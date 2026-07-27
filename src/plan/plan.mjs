@@ -41,6 +41,11 @@ export function planFromScenario(opts) {
     },
     /** Free-form options passed to the external adapter (never interpreted by core). */
     adapterOptions: scenario.adapterOptions || {},
+    record: scenario.record || {
+      // Default: do not film login / adapter setup
+      includeAuth: false,
+      startUrl: scenario.startUrl,
+    },
     cinematic: scenario.cinematic || {
       enabled: true,
       scale: 2,

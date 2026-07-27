@@ -62,10 +62,22 @@ async function main() {
     }
     case 'record': {
       const script = flag('--script')
-      if (!script) die('usage: adv record --script <script.json> [--out dir]')
+      if (!script) {
+        die(
+          'usage: adv record --script <script.json> [--out dir] [--include-auth|--no-include-auth]',
+        )
+      }
       const out = resolve(flag('--out', resolve(process.cwd(), 'runs', 'record')))
       ensureDir(out)
-      await recordScript({ scriptPath: resolve(script), outDir: out })
+      let includeAuth
+      if (has('--include-auth')) includeAuth = true
+      if (has('--no-include-auth')) includeAuth = false
+      await recordScript({
+        scriptPath: resolve(script),
+        outDir: out,
+        cwd: process.cwd(),
+        includeAuth,
+      })
       break
     }
     case 'edit': {
@@ -148,14 +160,20 @@ function printHelp() {
 
 Commands:
   plan    --scenario <yaml|json> [--code-root <dir>] [--out <dir>] [--adapter name]
-  record  --script <script.json> [--out <dir>]
+  record  --script <script.json> [--out <dir>] [--include-auth|--no-include-auth]
   edit    --meta <meta.json> [--out <dir>] [--target-sec 90]
   render  --plan <edit-plan.json> [--out <dir>] [--export <mp4>]
   all     --scenario <file> [--code-root <dir>] [--out <dir>] [--target-sec 90]
 
+  Recording window: by default login + adapter setup are NOT filmed; video starts
+  after session is ready. Use --include-auth (or ADV_INCLUDE_AUTH=1 / script
+  record.includeAuth: true) to film from login. Optional ADV_START_URL / script
+  record.startUrl deep-links after setup before the camera rolls.
+
 Env (config.env or shell):
   BASE_URL  DEMO_EMAIL  DEMO_PASSWORD  DEMO_OTP  REDIS_URL
   HEADLESS  AGENT_TIMEOUT_MS  COMPOSER_PLACEHOLDER  DEMO_CTA  ADV_REQUIRE_CREDS
+  ADV_INCLUDE_AUTH  ADV_START_URL
 
 Examples:
   adv plan --scenario /path/to/product/demos/scenario.yaml --code-root /path/to/product

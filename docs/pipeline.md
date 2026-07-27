@@ -26,11 +26,16 @@ adv plan --scenario /path/to/scenario.yaml --code-root /path/to/app --out runs/j
 
 ```bash
 adv record --script runs/job/01-plan/script.json --out runs/job/02-record
+# optional: --include-auth | --no-include-auth
 ```
 
 - Playwright + in-page cinematic camera  
 - Auth: generic email/password (+ optional OTP helpers)  
 - Product hooks: **external adapter** (`afterLogin`, `custom`, …)  
+- **Recording window:** by default setup (login + adapter) is silent; video
+  starts only after the session is ready (`record.includeAuth: false`).
+  Set `includeAuth: true` / `--include-auth` to film from login.
+  Optional `record.startUrl` / `ADV_START_URL` after setup.  
 
 ## Stage 3 — Edit
 

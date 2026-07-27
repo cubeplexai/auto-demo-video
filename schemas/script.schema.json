@@ -32,6 +32,21 @@
       "additionalProperties": true,
       "description": "Opaque bag for the external adapter only"
     },
+    "record": {
+      "type": "object",
+      "description": "Controls when the camera rolls (Playwright recordVideo).",
+      "properties": {
+        "includeAuth": {
+          "type": "boolean",
+          "default": false,
+          "description": "If false, login/adapter setup run without video; recording starts after session ready."
+        },
+        "startUrl": {
+          "type": "string",
+          "description": "Optional URL (absolute or path) to open after setup, before scenes."
+        }
+      }
+    },
     "cinematic": {
       "type": "object",
       "properties": {

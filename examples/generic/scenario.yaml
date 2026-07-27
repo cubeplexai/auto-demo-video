@@ -1,3 +1,10 @@
+# Product-agnostic smoke scenario.
+# Put product-specific flows (workspace pickers, chat prompts, etc.) in *your* repo,
+# not in auto-demo-video. Point adapter at an external module when needed:
+#
+#   adapter: ./adapters/my-app.mjs
+#   adapterOptions: { ... }   # free-form; only your adapter reads this
+
 id: generic-smoke
 title: Generic web smoke
 adapter: generic-web

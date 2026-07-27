@@ -1,56 +1,61 @@
 ---
 name: auto-demo-video
 description: >
-  Build product demo videos from use-case scenarios: plan a record script from
-  scenario + code, Playwright cinematic recording, smart highlight edit, ffmpeg
-  render. Use when the user wants automated product demos, screen recordings of
-  real app flows, highlight reels from meta/clicks, or says "auto-demo-video" / "adv".
+  Build product demo videos from use-case scenarios: plan a record script,
+  Playwright cinematic recording, smart highlight edit, ffmpeg render.
+  Use for automated product demos of real web apps. Product-specific adapters
+  and scenarios must live outside this package.
 ---
 
 # auto-demo-video
 
-Reusable pipeline for **live** product demos (not screenshot-only promos).
+Generic pipeline for **live** product demos.
+
+## Hard rule
+
+**Do not add product-specific logic into the auto-demo-video repository**
+(workspace names, brand prompts, tenancy pickers, app testids).  
+Keep those in the consumer app / marketing repo and pass them via:
+
+- `scenario.yaml` (steps, captions, prompts)  
+- `adapter: ./path/to/adapter.mjs` + `adapterOptions`  
+- env credentials / `storage-state.json`  
 
 ## Commands
 
-From a checkout of this repo (or global `adv` after `npm i -g`):
-
 ```bash
-adv plan   --scenario <yaml> [--code-root <app>]
+adv plan   --scenario <yaml> [--code-root <dir>]
 adv record --script <script.json>
 adv edit   --meta <meta.json> [--target-sec 90]
 adv render --plan <edit-plan.json>
 adv all    --scenario <yaml> --out runs/job
 ```
 
-Read `docs/pipeline.md` for stage contracts. Schemas live in `schemas/`.
-
-## When to use which tool
-
-- **Live multi-step product UI** (login, chat, sandbox, panels) → this skill.  
-- **Cinematic stills / 2.5D brand film** → consider video-shotcraft + Remotion.  
-- **Titles/lower-thirds packaging** of our `final.mp4` → Remotion project.
-
-## Agent workflow
-
-1. Collect or write `scenario.yaml` (see `examples/`).  
-2. `adv plan` — review `script.json`; optionally refine with code scan hints.  
-3. Ensure env: `BASE_URL`, `DEMO_EMAIL`, `DEMO_PASSWORD` (OTP/redis if needed).  
-4. `adv record` — inspect `meta.json` timeline + screenshots before editing.  
-5. `adv edit` — inspect `edit-plan.json` segments (waits should be speed>1).  
-6. `adv render` — ship `final.mp4`.  
-7. Optional: wrap with Remotion intro/outro.
-
 ## Adapters
 
-- `generic-web` — login + navigate  
-- `cubeplex` — Team/test workspace selection (never Personal)
+Built-in: **`generic-web` only**.
 
-Add new adapters under `src/adapters/` and register in `src/adapters/index.mjs`.
+External:
 
-## Guardrails
+```yaml
+adapter: ./demos/adapter.mjs
+adapterOptions:
+  # free-form for your adapter
+```
 
-- Prefer real `data-testid` / placeholders from the app code.  
-- Do not claim unreleased features in captions.  
-- Never demo with real customer PII; use seed tenants.  
-- Cinematic zoom uses **page-space** coordinates after CSS camera transform.
+Shape: `export default { loginPath?, isAuthed?, afterLogin?, custom?, composerPlaceholders? }`.
+
+## Workflow
+
+1. Author scenario + optional external adapter in the **product** repo.  
+2. `adv plan` → review `script.json`.  
+3. Set `BASE_URL` + credentials (or storage state).  
+4. `adv record` → inspect meta/screens.  
+5. `adv edit` → `adv render` → `final.mp4`.  
+6. Optional Remotion packaging in another project.
+
+## Docs
+
+- `docs/pipeline.md`  
+- `docs/shotcraft-notes.md`  
+- `schemas/*.json`  

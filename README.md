@@ -2,9 +2,11 @@
 
 **Scenario → script → Playwright cinematic record → smart edit → final MP4**
 
-Reusable toolkit for product demo videos of **real web apps** (live clicks, typing, agents), with edge-aware zoom at capture time and highlight cutting driven by recording telemetry.
+A **generic** toolkit for product demo videos of real web apps: live clicks/typing, optional agent waits, edge-aware zoom at capture time, and highlight cutting from recording telemetry.
 
-> Related: [video-shotcraft](https://github.com/Vincentwei1021/video-shotcraft) (shot recipe cards + Remotion stills) — see [docs/shotcraft-notes.md](docs/shotcraft-notes.md) for what we learned and how the tools complement each other.
+**Product-specific behavior does not live here.** Put scenarios, credentials, and adapters in *your* app or marketing repo; point this tool at them.
+
+> Complements [video-shotcraft](https://github.com/Vincentwei1021/video-shotcraft) (shot cards + Remotion stills). See [docs/shotcraft-notes.md](docs/shotcraft-notes.md).
 
 ## Install
 
@@ -14,98 +16,107 @@ cd auto-demo-video
 npm install
 ```
 
-Optional agent skill:
+Agent skill (optional):
 
 ```bash
 npx skills add cubeplexai/auto-demo-video
-# or symlink skills/auto-demo-video into your agent skills dir
 ```
 
 ## Quick start
 
 ```bash
-# 1) Plan from a use-case scenario
+# Plan from a scenario living in *your* project
 node bin/adv.mjs plan \
-  --scenario examples/cubeplex/scenario.yaml \
-  --code-root /path/to/your/app \
+  --scenario /path/to/your-product/demos/scenario.yaml \
+  --code-root /path/to/your-product \
   --out runs/demo/01-plan
 
-# 2) Record (needs running app + credentials)
 export BASE_URL=http://127.0.0.1:3000
 export DEMO_EMAIL=...
 export DEMO_PASSWORD=...
-node bin/adv.mjs record \
-  --script runs/demo/01-plan/script.json \
-  --out runs/demo/02-record
 
-# 3) Edit highlights (compress waits, keep payoffs)
-node bin/adv.mjs edit \
-  --meta runs/demo/02-record/meta.json \
-  --out runs/demo/03-edit \
-  --target-sec 90
-
-# 4) Render final
-node bin/adv.mjs render \
-  --plan runs/demo/03-edit/edit-plan.json \
-  --out runs/demo/04-render \
-  --export runs/demo/final.mp4
+node bin/adv.mjs record --script runs/demo/01-plan/script.json --out runs/demo/02-record
+node bin/adv.mjs edit   --meta runs/demo/02-record/meta.json --target-sec 90 --out runs/demo/03-edit
+node bin/adv.mjs render --plan runs/demo/03-edit/edit-plan.json --export runs/demo/final.mp4
 ```
 
-Or one shot:
+One shot:
 
 ```bash
-node bin/adv.mjs all --scenario examples/cubeplex/scenario.yaml --out runs/demo
+node bin/adv.mjs all --scenario /path/to/scenario.yaml --out runs/demo
+```
+
+## What belongs where
+
+| In **this** repo | In **your** product/marketing repo |
+|---|---|
+| Planner, recorder, editor, renderer | `scenario.yaml` use cases & copy |
+| Generic Playwright step runner | Selectors, prompts, brand captions |
+| Built-in `generic-web` adapter only | External `adapter.mjs` (login, tenancy, workspace pick) |
+| Cinematic zoom engine | Credentials, seed tenants, `storage-state.json` |
+| Schemas + CLI | CI job that calls `adv all` |
+
+## External adapters
+
+Only built-in adapter: **`generic-web`**.
+
+For anything product-specific (workspace picker, SSO, org slug, chat placeholder):
+
+```yaml
+# your-product/demos/scenario.yaml
+adapter: ./adapters/my-app.mjs   # path relative to cwd when you run adv
+adapterOptions:                   # free-form; only your adapter reads this
+  homePath: /app
+  pickLabel: Production
+```
+
+See [examples/external-adapter.example.mjs](examples/external-adapter.example.mjs).
+
+```js
+// your-product/adapters/my-app.mjs
+export default {
+  loginPath: '/login',
+  async afterLogin(page, { baseUrl, adapterOptions }) { /* ... */ },
+  composerPlaceholders: ['Your product composer placeholder'],
+  custom: { /* named hooks for kind: custom */ },
+}
 ```
 
 ## Pipeline
 
-| Stage | Artifact | Role |
-|---|---|---|
-| **plan** | `script.json` | Scenario + code scan → record script |
-| **record** | `session.webm`, `meta.json`, `clicks.json` | Raw material with cinematic zoom |
-| **edit** | `edit-plan.json` | Segments, speed, transitions, captions |
-| **render** | `final.mp4` | ffmpeg cut/speed/concat/endcard/subs |
+| Stage | Artifact |
+|---|---|
+| **plan** | `script.json` |
+| **record** | `session.webm`, `meta.json`, `clicks.json` |
+| **edit** | `edit-plan.json` |
+| **render** | `final.mp4` |
 
 Details: [docs/pipeline.md](docs/pipeline.md)
 
-## Scenario format
+## Scenario / script schemas
 
-See [schemas/scenario.schema.json](schemas/scenario.schema.json) and [examples/cubeplex/scenario.yaml](examples/cubeplex/scenario.yaml).
+- [schemas/scenario.schema.json](schemas/scenario.schema.json)
+- [schemas/script.schema.json](schemas/script.schema.json)
+- [schemas/edit-plan.schema.json](schemas/edit-plan.schema.json)
+
+Minimal example: [examples/generic/scenario.yaml](examples/generic/scenario.yaml)
 
 Step kinds: `navigate` · `click` · `type` · `send_message` · `wait_idle` · `wait_ms` · `screenshot` · `open_panel` · `assert_text` · `custom`
 
-## Adapters
-
-Product-specific auth / workspace selection:
-
-- `generic-web` — default  
-- `cubeplex` — Team Workspace selection (skips Personal)
-
-## Cinematic camera
-
-In-page zoom (~2×) with **edge clamping** (sidebar clicks hug the left), click ripple, and a fake cursor (headless has no OS cursor in Playwright video). Coordinates are converted page↔screen so multi-zoom (composer → send) stays aligned.
-
-## Env
+## Env (generic)
 
 ```bash
 BASE_URL=
 DEMO_EMAIL=
 DEMO_PASSWORD=
-DEMO_OTP=                 # optional
-REDIS_URL=                # optional, email_otp:{email} hash field code
-WORKSPACE_NAMES=Team Workspace,test
-FORBIDDEN_WORKSPACES=Personal
+DEMO_OTP=              # optional
+REDIS_URL=             # optional OTP helper
 HEADLESS=1
 AGENT_TIMEOUT_MS=300000
-COMPOSER_PLACEHOLDER=     # override chat input placeholder
-DEMO_CTA=github.com/you/repo
+COMPOSER_PLACEHOLDER=  # chat input placeholder if not via adapter
+ADV_REQUIRE_CREDS=1    # set 0 when using storageState-only auth
+DEMO_CTA=              # endcard line
 ```
-
-Copy to `config.env` in the working directory.
-
-## Status
-
-**v0.1** — usable MVP for CubePlex-style demos; edit heuristics are deterministic (no ML). Remotion packaging remains optional and external.
 
 ## License
 

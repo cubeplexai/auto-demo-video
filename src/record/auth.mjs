@@ -8,11 +8,27 @@ export async function ensureSession(page, cfg) {
   await page.goto(`${cfg.baseUrl}/`, { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(1200)
 
-  if (cfg.readyUrlTest?.(page.url())) return
+  if (cfg.skipLogin) {
+    if (cfg.afterLogin) await cfg.afterLogin(page, cfg)
+    return
+  }
+
+  if (cfg.readyUrlTest?.(page.url())) {
+    if (cfg.afterLogin) await cfg.afterLogin(page, cfg)
+    return
+  }
 
   if (!/login|sign-?in|auth/i.test(page.url()) && !cfg.forceLogin) {
-    // Already somewhere useful?
-    if (cfg.isAuthed?.(page.url())) return
+    if (cfg.isAuthed?.(page.url())) {
+      if (cfg.afterLogin) await cfg.afterLogin(page, cfg)
+      return
+    }
+  }
+
+  if (!cfg.email || !cfg.password) {
+    throw new Error(
+      'Login required but email/password missing. Set credentials or use storageState + adapter.skipLogin.',
+    )
   }
 
   await page.goto(`${cfg.baseUrl}${cfg.loginPath || '/login'}`, {
@@ -29,7 +45,7 @@ export async function ensureSession(page, cfg) {
     const code = await resolveOtp(cfg)
     if (!code) {
       throw new Error(
-        'OTP required. Set DEMO_OTP or REDIS_URL (email_otp:{email} → code).',
+        'OTP required. Set DEMO_OTP or REDIS_URL (email_otp:{email} → code), or pre-auth via storageState.',
       )
     }
     await fillOtp(page, code)

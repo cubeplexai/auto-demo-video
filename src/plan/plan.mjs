@@ -38,9 +38,9 @@ export function planFromScenario(opts) {
       emailEnv: 'DEMO_EMAIL',
       passwordEnv: 'DEMO_PASSWORD',
       storageState: 'storage-state.json',
-      workspaceNames: scenario.workspaceNames || [],
-      forbiddenWorkspaces: scenario.forbiddenWorkspaces || ['Personal'],
     },
+    /** Free-form options passed to the external adapter (never interpreted by core). */
+    adapterOptions: scenario.adapterOptions || {},
     cinematic: scenario.cinematic || {
       enabled: true,
       scale: 2,

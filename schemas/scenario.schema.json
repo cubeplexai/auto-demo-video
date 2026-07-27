@@ -14,7 +14,12 @@
     "baseUrl": { "type": "string" },
     "adapter": {
       "type": "string",
-      "description": "Adapter module id (e.g. generic-web, cubeplex)"
+      "description": "generic-web (built-in) or path/package of an external adapter module"
+    },
+    "adapterOptions": {
+      "type": "object",
+      "description": "Opaque options passed only to the external adapter",
+      "additionalProperties": true
     },
     "language": { "type": "string", "default": "en" },
     "tags": { "type": "array", "items": { "type": "string" } },

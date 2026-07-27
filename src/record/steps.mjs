@@ -56,7 +56,10 @@ async function runStep(page, step, ctx) {
       break
     }
     case 'send_message': {
-      await sendMessage(page, step.prompt || step.text || '', cam)
+      await sendMessage(page, step.prompt || step.text || '', cam, {
+        adapter: ctx.adapter,
+        stepPlaceholders: step.placeholders,
+      })
       break
     }
     case 'wait_idle': {
@@ -137,14 +140,16 @@ function resolveLocator(page, step) {
   throw new Error(`Step ${step.id}: need selector, role+name, or text`)
 }
 
-async function sendMessage(page, text, cam) {
+async function sendMessage(page, text, cam, ctx) {
   await installCamera(page)
-  // Prefer common chat composers
+  // Placeholders: step override → env → adapter → generic fallbacks (no product names)
   const placeholders = [
+    ...(Array.isArray(ctx?.stepPlaceholders) ? ctx.stepPlaceholders : []),
     process.env.COMPOSER_PLACEHOLDER,
-    'Tell CubePlex what you want to get done…',
+    ...(ctx?.adapter?.composerPlaceholders || []),
     'Message',
     'Type a message',
+    'Send a message',
   ].filter(Boolean)
 
   let input = null

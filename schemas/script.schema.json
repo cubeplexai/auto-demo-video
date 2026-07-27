@@ -24,16 +24,13 @@
       "properties": {
         "emailEnv": { "type": "string" },
         "passwordEnv": { "type": "string" },
-        "storageState": { "type": "string" },
-        "workspaceNames": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "forbiddenWorkspaces": {
-          "type": "array",
-          "items": { "type": "string" }
-        }
+        "storageState": { "type": "string" }
       }
+    },
+    "adapterOptions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Opaque bag for the external adapter only"
     },
     "cinematic": {
       "type": "object",

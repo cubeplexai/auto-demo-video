@@ -27,7 +27,9 @@ export async function recordScript(opts) {
   ensureDir(videoDir)
   ensureDir(screensDir)
 
-  const adapter = await loadAdapter(script.adapter || 'generic-web')
+  const adapter = await loadAdapter(script.adapter || 'generic-web', {
+    cwd: opts.cwd || process.cwd(),
+  })
   const email =
     process.env[script.auth?.emailEnv || 'DEMO_EMAIL'] ||
     process.env.DEMO_EMAIL
@@ -35,12 +37,21 @@ export async function recordScript(opts) {
     process.env[script.auth?.passwordEnv || 'DEMO_PASSWORD'] ||
     process.env.DEMO_PASSWORD
 
-  if (!email || !password) {
-    throw new Error('DEMO_EMAIL / DEMO_PASSWORD (or script auth env keys) required')
+  // Credentials optional if adapter uses storageState-only / SSO / custom auth
+  const requireCreds = process.env.ADV_REQUIRE_CREDS !== '0'
+  if (requireCreds && (!email || !password) && !storageStateIfPresent(
+    script.auth?.storageState
+      ? resolve(opts.cwd || process.cwd(), script.auth.storageState)
+      : '',
+  )) {
+    throw new Error(
+      'Set DEMO_EMAIL / DEMO_PASSWORD (or auth env keys), or provide auth.storageState. ' +
+        'Set ADV_REQUIRE_CREDS=0 to skip this check.',
+    )
   }
 
   const statePath = script.auth?.storageState
-    ? resolve(outDir, '..', script.auth.storageState)
+    ? resolve(opts.cwd || process.cwd(), script.auth.storageState)
     : resolve(outDir, '..', 'storage-state.json')
 
   const headless = process.env.HEADLESS !== '0'
@@ -93,15 +104,22 @@ export async function recordScript(opts) {
     mark('session:start')
     await ensureSession(page, {
       baseUrl: script.baseUrl,
-      email,
-      password,
+      email: email || '',
+      password: password || '',
       demoOtp: process.env.DEMO_OTP,
       redisUrl: process.env.REDIS_URL,
       loginPath: adapter.loginPath,
       isAuthed: adapter.isAuthed,
       readyUrlTest: adapter.readyUrlTest,
+      skipLogin: adapter.skipLogin,
       afterLogin: async (p, cfg) => {
-        if (adapter.afterLogin) await adapter.afterLogin(p, { ...cfg, script })
+        if (adapter.afterLogin) {
+          await adapter.afterLogin(p, {
+            ...cfg,
+            script,
+            adapterOptions: script.adapterOptions || {},
+          })
+        }
       },
     })
     mark('session:ready')

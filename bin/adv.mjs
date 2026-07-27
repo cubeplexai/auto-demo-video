@@ -155,12 +155,14 @@ Commands:
 
 Env (config.env or shell):
   BASE_URL  DEMO_EMAIL  DEMO_PASSWORD  DEMO_OTP  REDIS_URL
-  WORKSPACE_NAMES  FORBIDDEN_WORKSPACES  HEADLESS  AGENT_TIMEOUT_MS
-  COMPOSER_PLACEHOLDER  DEMO_CTA
+  HEADLESS  AGENT_TIMEOUT_MS  COMPOSER_PLACEHOLDER  DEMO_CTA  ADV_REQUIRE_CREDS
 
 Examples:
-  adv plan --scenario examples/cubeplex/scenario.yaml --code-root ../cubeplex/frontend
-  adv all  --scenario examples/cubeplex/scenario.yaml --out runs/demo1
+  adv plan --scenario /path/to/product/demos/scenario.yaml --code-root /path/to/product
+  adv all  --scenario ./demos/scenario.yaml --out runs/demo1
+
+Product-specific adapters live in the product repo, e.g.:
+  adapter: ./demos/adapter.mjs
 `)
 }
 

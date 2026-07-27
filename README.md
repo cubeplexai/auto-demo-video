@@ -99,6 +99,32 @@ Minimal example: [examples/generic/scenario.yaml](examples/generic/scenario.yaml
 
 Step kinds: `navigate` · `click` · `type` · `send_message` · `wait_idle` · `wait_ms` · `screenshot` · `open_panel` · `assert_text` · `custom`
 
+## When does recording start?
+
+Playwright attaches video to a **browser context**, so login cannot be paused
+mid-context. Instead:
+
+| Mode | Behavior |
+|---|---|
+| **Default** (`includeAuth: false`) | Login + `adapter.afterLogin` run **without** video → new context starts `recordVideo` on the ready page → scenes |
+| **`includeAuth: true`** | One context films from login through the end |
+
+```yaml
+# scenario.yaml
+record:
+  includeAuth: false          # default
+  startUrl: /app/ready        # optional deep link after setup
+```
+
+```bash
+adv record --script script.json --no-include-auth   # default
+adv record --script script.json --include-auth      # film login too
+# or ADV_INCLUDE_AUTH=1 / ADV_START_URL=/app/...
+```
+
+Typical pattern: adapter finishes workspace/tenant setup silently; the camera
+only sees the demo.
+
 ## Env (generic)
 
 ```bash
@@ -111,6 +137,8 @@ HEADLESS=1
 AGENT_TIMEOUT_MS=300000
 COMPOSER_PLACEHOLDER=  # chat input placeholder if not via adapter
 ADV_REQUIRE_CREDS=1    # set 0 when using storageState-only auth
+ADV_INCLUDE_AUTH=0     # 1 = film login/setup
+ADV_START_URL=         # optional path/URL after setup
 DEMO_CTA=              # endcard line
 ```
 

@@ -1,0 +1,55 @@
+{
+  "name": "auto-demo-video",
+  "version": "0.1.0",
+  "description": "Scenario → script → Playwright cinematic record → smart edit → final product demo video",
+  "type": "module",
+  "license": "Apache-2.0",
+  "bin": {
+    "adv": "./bin/adv.mjs",
+    "auto-demo-video": "./bin/adv.mjs"
+  },
+  "scripts": {
+    "postinstall": "playwright install chromium",
+    "adv": "node bin/adv.mjs",
+    "plan": "node bin/adv.mjs plan",
+    "record": "node bin/adv.mjs record",
+    "edit": "node bin/adv.mjs edit",
+    "render": "node bin/adv.mjs render",
+    "all": "node bin/adv.mjs all",
+    "test": "node --test test/**/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "playwright": "1.61.1",
+    "yaml": "^2.7.0"
+  },
+  "files": [
+    "bin",
+    "src",
+    "schemas",
+    "skills",
+    "docs",
+    "examples",
+    "LICENSE",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cubeplexai/auto-demo-video.git"
+  },
+  "keywords": [
+    "playwright",
+    "demo",
+    "video",
+    "product-demo",
+    "remotion",
+    "cinematic",
+    "ffmpeg"
+  ],
+  "allowScripts": {
+    "ffmpeg-static@5.3.0": true
+  }
+}

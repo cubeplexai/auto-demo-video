@@ -1,0 +1,14 @@
+id: generic-smoke
+title: Generic web smoke
+adapter: generic-web
+baseUrl: http://127.0.0.1:3000
+steps:
+  - id: home
+    kind: navigate
+    url: /
+    label: Home
+    caption: Land on the product
+    highlight: true
+  - id: pause
+    kind: wait_ms
+    ms: 2000

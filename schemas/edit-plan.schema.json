@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cubeplexai/auto-demo-video/schemas/edit-plan.schema.json",
+  "title": "EditPlan",
+  "description": "How to cut/speed/transition a recorded session into a highlight reel.",
+  "type": "object",
+  "required": ["source", "segments"],
+  "properties": {
+    "source": {
+      "type": "object",
+      "required": ["video", "meta"],
+      "properties": {
+        "video": { "type": "string" },
+        "meta": { "type": "string" },
+        "clicks": { "type": "string" }
+      }
+    },
+    "targetDurationSec": { "type": "number" },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["startSec", "endSec"],
+        "properties": {
+          "startSec": { "type": "number" },
+          "endSec": { "type": "number" },
+          "speed": {
+            "type": "number",
+            "default": 1,
+            "description": "Playback rate (>1 speeds up waits)"
+          },
+          "label": { "type": "string" },
+          "transition": {
+            "type": "string",
+            "enum": ["cut", "fade", "dissolve"],
+            "default": "cut"
+          },
+          "keepAudio": { "type": "boolean", "default": false }
+        }
+      }
+    },
+    "endcard": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "durationSec": { "type": "number" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "cta": { "type": "string" }
+      }
+    },
+    "captions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "startSec": { "type": "number" },
+          "endSec": { "type": "number" },
+          "text": { "type": "string" }
+        }
+      }
+    }
+  }
+}

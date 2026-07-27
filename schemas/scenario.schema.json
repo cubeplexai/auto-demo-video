@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cubeplexai/auto-demo-video/schemas/scenario.schema.json",
+  "title": "DemoScenario",
+  "description": "Product-demo use case: human goals + machine-runnable steps.",
+  "type": "object",
+  "required": ["id", "title", "steps"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "audience": { "type": "string" },
+    "product": { "type": "string" },
+    "baseUrl": { "type": "string" },
+    "adapter": {
+      "type": "string",
+      "description": "Adapter module id (e.g. generic-web, cubeplex)"
+    },
+    "language": { "type": "string", "default": "en" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "codeHints": {
+      "type": "array",
+      "description": "Paths or globs the planner may read for selectors/copy",
+      "items": { "type": "string" }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" }
+    }
+  },
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "navigate",
+            "click",
+            "type",
+            "send_message",
+            "wait_idle",
+            "wait_ms",
+            "screenshot",
+            "open_panel",
+            "assert_text",
+            "custom"
+          ]
+        },
+        "label": { "type": "string" },
+        "caption": { "type": "string" },
+        "url": { "type": "string" },
+        "selector": { "type": "string" },
+        "role": { "type": "string" },
+        "name": { "type": "string" },
+        "text": { "type": "string" },
+        "prompt": { "type": "string" },
+        "ms": { "type": "number" },
+        "cinematic": { "type": "boolean", "default": true },
+        "highlight": {
+          "type": "boolean",
+          "description": "Prefer this step in highlight reels",
+          "default": false
+        },
+        "custom": { "type": "string" }
+      }
+    }
+  }
+}

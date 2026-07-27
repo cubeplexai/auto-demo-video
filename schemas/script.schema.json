@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cubeplexai/auto-demo-video/schemas/script.schema.json",
+  "title": "DemoScript",
+  "description": "Record-ready script produced by the planner from a scenario (+ optional code).",
+  "type": "object",
+  "required": ["id", "scenarioId", "scenes", "viewport"],
+  "properties": {
+    "id": { "type": "string" },
+    "scenarioId": { "type": "string" },
+    "title": { "type": "string" },
+    "adapter": { "type": "string" },
+    "baseUrl": { "type": "string" },
+    "viewport": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "emailEnv": { "type": "string" },
+        "passwordEnv": { "type": "string" },
+        "storageState": { "type": "string" },
+        "workspaceNames": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "forbiddenWorkspaces": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "cinematic": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "scale": { "type": "number" },
+        "zoomInMs": { "type": "number" },
+        "zoomOutMs": { "type": "number" }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "steps"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "narration": { "type": "string" },
+          "caption": { "type": "string" },
+          "highlight": { "type": "boolean" },
+          "steps": { "type": "array" }
+        }
+      }
+    },
+    "captions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["startSec", "endSec", "text"],
+        "properties": {
+          "startSec": { "type": "number" },
+          "endSec": { "type": "number" },
+          "text": { "type": "string" },
+          "lang": { "type": "string" }
+        }
+      }
+    },
+    "plannerNotes": { "type": "string" }
+  }
+}

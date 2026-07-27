@@ -1,0 +1,17 @@
+node_modules/
+.playwright/
+dist/
+out/
+runs/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+config.local.env
+storage-state.json
+*.webm
+*.mp4
+!examples/**/fixtures/**
+coverage/
+.remotion/

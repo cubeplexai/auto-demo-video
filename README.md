@@ -4,10 +4,6 @@
 
 A **generic** toolkit for product demo videos of real web apps: live clicks/typing, optional agent waits, edge-aware zoom at capture time, and highlight cutting from recording telemetry.
 
-**Product-specific behavior does not live here.** Put scenarios, credentials, and adapters in *your* app or marketing repo; point this tool at them.
-
-> Complements [video-shotcraft](https://github.com/Vincentwei1021/video-shotcraft) (shot cards + Remotion stills). See [docs/shotcraft-notes.md](docs/shotcraft-notes.md).
-
 ## Install
 
 ```bash

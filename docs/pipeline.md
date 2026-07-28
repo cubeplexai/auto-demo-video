@@ -47,18 +47,26 @@ adv edit --meta runs/job/02-record/meta.json --target-sec 90 --out runs/job/03-e
 - Prefer click windows / highlight scenes  
 - Fit to target duration  
 
-## Stage 4 — Render
+## Stage 4 — Render (highlight cut)
 
 ```bash
-adv render --plan runs/job/03-edit/edit-plan.json --export runs/job/final.mp4
+adv render --plan runs/job/03-edit/edit-plan.json --export runs/job/final-cut.mp4
 ```
 
 ffmpeg cut / speed / concat / endcard / captions.
 
+## Stage 5 — Polish (optional, FocuSee-like)
+
+```bash
+adv polish --meta runs/job/02-record/meta.json --export runs/job/polished.mp4
+```
+
+Post-zoom from clicks + rounded window on wallpaper. See [polish.md](polish.md).
+
 ## One shot
 
 ```bash
-adv all --scenario /path/to/scenario.yaml --out runs/job
+adv all --scenario /path/to/scenario.yaml --out runs/job --polish
 ```
 
 ## Adapters

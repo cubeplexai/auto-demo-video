@@ -6,7 +6,8 @@
  *   adv record --script path [--out runs/x/record]
  *   adv edit   --meta path [--out runs/x/edit] [--target-sec 90]
  *   adv render --plan path [--out runs/x/render] [--export path]
- *   adv all    --scenario path [--code-root path] [--out runs/x]
+ *   adv polish --meta path | --video path [--clicks path] [--out dir] [--export path]
+ *   adv all    --scenario path [--code-root path] [--out runs/x] [--polish]
  */
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -16,6 +17,7 @@ import { planFromScenario } from '../src/plan/plan.mjs'
 import { recordScript } from '../src/record/record.mjs'
 import { buildEditPlan } from '../src/edit/edit.mjs'
 import { renderPlan } from '../src/render/render.mjs'
+import { polishFromMeta, polishRecording } from '../src/polish/polish.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
@@ -102,6 +104,37 @@ async function main() {
       })
       break
     }
+    case 'polish': {
+      // FocuSee-like packaging: post-zoom from clicks + window chrome on wallpaper
+      const meta = flag('--meta')
+      const video = flag('--video')
+      if (!meta && !video) {
+        die(
+          'usage: adv polish --meta <meta.json> | --video <mp4|webm> [--clicks clicks.json] [--out dir] [--export path] [--no-zoom] [--no-chrome]',
+        )
+      }
+      const out = resolve(flag('--out', resolve(process.cwd(), 'runs', 'polish')))
+      const options = {
+        exportPath: flag('--export') ? resolve(flag('--export')) : undefined,
+        options: {
+          skipZoom: has('--no-zoom'),
+          skipChrome: has('--no-chrome'),
+          zoomScale: Number(flag('--zoom-scale', '2')),
+        },
+      }
+      if (meta) {
+        await polishFromMeta(resolve(meta), out, options)
+      } else {
+        await polishRecording({
+          videoPath: resolve(video),
+          clicksPath: flag('--clicks') ? resolve(flag('--clicks')) : undefined,
+          outDir: out,
+          exportPath: options.exportPath,
+          options: options.options,
+        })
+      }
+      break
+    }
     case 'all': {
       const scenario = flag('--scenario')
       if (!scenario) die('usage: adv all --scenario <file> [--code-root dir] [--out runs/job]')
@@ -132,10 +165,25 @@ async function main() {
       await renderPlan({
         planPath: edited.planPath,
         outDir: renderOut,
-        exportPath: resolve(base, 'final.mp4'),
+        exportPath: resolve(base, 'final-cut.mp4'),
       })
 
-      console.log(`[adv] done → ${base}/final.mp4`)
+      let finalPath = resolve(base, 'final-cut.mp4')
+      if (has('--polish') || process.env.ADV_POLISH === '1') {
+        const polishOut = resolve(base, '05-polish')
+        // Polish the raw record (best clicks fidelity), not the already-cut reel
+        await polishFromMeta(resolve(recordOut, 'meta.json'), polishOut, {
+          exportPath: resolve(base, 'final.mp4'),
+        })
+        finalPath = resolve(base, 'final.mp4')
+      } else {
+        // Without polish, final is the highlight cut
+        const { copyFileSync } = await import('node:fs')
+        copyFileSync(finalPath, resolve(base, 'final.mp4'))
+        finalPath = resolve(base, 'final.mp4')
+      }
+
+      console.log(`[adv] done → ${finalPath}`)
       console.log(`[adv] meta source duration ~${meta.log?.at?.(-1)?.t ?? '?'}s`)
       break
     }
@@ -163,12 +211,17 @@ Commands:
   record  --script <script.json> [--out <dir>] [--include-auth|--no-include-auth]
   edit    --meta <meta.json> [--out <dir>] [--target-sec 90]
   render  --plan <edit-plan.json> [--out <dir>] [--export <mp4>]
-  all     --scenario <file> [--code-root <dir>] [--out <dir>] [--target-sec 90]
+  polish  --meta <meta.json> | --video <file> [--clicks <json>] [--export <mp4>]
+          [--no-zoom] [--no-chrome] [--zoom-scale 2]
+  all     --scenario <file> [--out <dir>] [--target-sec 90] [--polish]
 
   Recording window: by default login + adapter setup are NOT filmed; video starts
   after session is ready. Use --include-auth (or ADV_INCLUDE_AUTH=1 / script
   record.includeAuth: true) to film from login. Optional ADV_START_URL / script
   record.startUrl deep-links after setup before the camera rolls.
+
+  Polish (FocuSee-like): post zoom from clicks.json + floating rounded window on
+  gradient wallpaper. Use after record (or on any video+clicks).
 
 Env (config.env or shell):
   BASE_URL  DEMO_EMAIL  DEMO_PASSWORD  DEMO_OTP  REDIS_URL

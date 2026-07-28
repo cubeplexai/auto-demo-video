@@ -33,13 +33,16 @@ export DEMO_PASSWORD=...
 
 node bin/adv.mjs record --script runs/demo/01-plan/script.json --out runs/demo/02-record
 node bin/adv.mjs edit   --meta runs/demo/02-record/meta.json --target-sec 90 --out runs/demo/03-edit
-node bin/adv.mjs render --plan runs/demo/03-edit/edit-plan.json --export runs/demo/final.mp4
+node bin/adv.mjs render --plan runs/demo/03-edit/edit-plan.json --export runs/demo/final-cut.mp4
+
+# FocuSee-like packaging (zoom track + window chrome)
+node bin/adv.mjs polish --meta runs/demo/02-record/meta.json --export runs/demo/final.mp4
 ```
 
-One shot:
+One shot (with polish):
 
 ```bash
-node bin/adv.mjs all --scenario /path/to/scenario.yaml --out runs/demo
+node bin/adv.mjs all --scenario /path/to/scenario.yaml --out runs/demo --polish
 ```
 
 ## What belongs where
@@ -85,9 +88,10 @@ export default {
 | **plan** | `script.json` |
 | **record** | `session.webm`, `meta.json`, `clicks.json` |
 | **edit** | `edit-plan.json` |
-| **render** | `final.mp4` |
+| **render** | highlight cut MP4 |
+| **polish** | FocuSee-like window chrome + post-zoom from clicks |
 
-Details: [docs/pipeline.md](docs/pipeline.md)
+Details: [docs/pipeline.md](docs/pipeline.md) · [docs/polish.md](docs/polish.md)
 
 ## Scenario / script schemas
 
